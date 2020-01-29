@@ -11,10 +11,9 @@
 #include "freertos/task.h"
 #include "esp_log.h"
 #include "driver/gpio.h"
-#include "st7735.h"
 #include "board.h"
 #include "pwr_mgmt.h"
-#include "main_menu.h"
+#include "desktop.h"
 
 
 void board_lcd_enable(void)
@@ -44,7 +43,7 @@ void app_main(void)
 
     
     board_init();
-    //main_menu_init();
+    desktop_init();
     //vTaskDelay(2000 / portTICK_PERIOD_MS);
     //ESP_LOGE(TAG, "Preparing for sleep");
     //pwr_mgmt_deep_sleep();
