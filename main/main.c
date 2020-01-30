@@ -17,6 +17,7 @@
 #include "desktop.h"
 
 #include "pcf8563.h"
+#include "battery.h"
 #include "time.h"
 
 
@@ -30,9 +31,10 @@ void app_main(void)
     desktop_init();
     struct tm time;
     while(1) {
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
         pcf8563_read_time(&time);
         desktop_update_time(&time);
+        desktop_update_battery(battery_lvl_read());
+        vTaskDelay(1000 / portTICK_PERIOD_MS);
     }
 
     /*vTaskDelay(5000 / portTICK_PERIOD_MS);

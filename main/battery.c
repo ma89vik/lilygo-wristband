@@ -52,7 +52,7 @@ float battery_lvl_read() {
 
     //Convert adc_reading to voltage in mV
     uint32_t voltage = esp_adc_cal_raw_to_voltage(adc_reading, &adc_chars);
-    ESP_LOGI(TAG, "Raw: %d\tVoltage: %dmV\n", adc_reading, voltage);
+    ESP_LOGD(TAG, "Raw: %d\tVoltage: %dmV\n", adc_reading, voltage);
 
     /* Measured over a voltage divider, *2 to get real battery voltage */
     val = 2*voltage / 1000.0;

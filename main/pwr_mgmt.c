@@ -34,5 +34,6 @@ static void pwr_mgmt_wake_on_mov_init() {
 void pwr_mgmt_deep_sleep() {
     pwr_mgmt_wake_on_mov_init();
     
+    esp_deep_sleep_disable_rom_logging();
     esp_deep_sleep_start();
 }

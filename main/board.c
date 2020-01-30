@@ -15,6 +15,7 @@
 #include "pcf8563.h"
 #include "display.h"
 #include "battery.h"
+#include "input.h"
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -28,8 +29,9 @@ static void board_lcd_enable();
 static void board_lcd_backlight(bool enable);
 
 void board_init() {
+    //install gpio isr service
+    gpio_install_isr_service(0);
     // Driver inits
-    
     i2c_init();
 
 
@@ -41,6 +43,8 @@ void board_init() {
     board_lcd_enable();
     board_lcd_backlight(true);
     display_init();
+
+    input_init();
 
     // Battery measurement
     battery_init();
