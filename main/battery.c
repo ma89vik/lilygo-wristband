@@ -47,7 +47,6 @@ float battery_lvl_read() {
     //Multisampling
     for (int i = 0; i < N_OF_SAMPLES; i++) {
         adc_reading += adc1_get_raw(channel);
-        ESP_LOGE(TAG, "raw %d", adc1_get_raw(channel));
     }
     adc_reading /= N_OF_SAMPLES;
 

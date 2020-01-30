@@ -12,6 +12,7 @@
 #include "driver/i2c.h"
 #include "driver/gpio.h"
 #include "mpu9250.h"
+#include "pcf8563.h"
 #include "display.h"
 #include "battery.h"
 
@@ -19,7 +20,7 @@
 #include "freertos/task.h"
 #include "freertos/queue.h"
 
-#define ESP_INTR_FLAG_DEFAULT 0
+#include "time.h"
 
 const i2c_port_t i2c_port = I2C_NUM_1;
 static void i2c_init();
@@ -28,11 +29,14 @@ static void board_lcd_backlight(bool enable);
 
 void board_init() {
     // Driver inits
+    
     i2c_init();
+
 
     // Peripherals init
     mpu9250_init(i2c_port);
     // RTC
+    pcf8563_init(i2c_port);
 
     board_lcd_enable();
     board_lcd_backlight(true);

@@ -16,8 +16,8 @@
 #include "pwr_mgmt.h"
 #include "desktop.h"
 
-
-
+#include "pcf8563.h"
+#include "time.h"
 
 
 static char* TAG = "main";
@@ -28,8 +28,15 @@ void app_main(void)
     
     board_init();
     desktop_init();
-    vTaskDelay(5000 / portTICK_PERIOD_MS);
+    struct tm time;
+    while(1) {
+        vTaskDelay(1000 / portTICK_PERIOD_MS);
+        pcf8563_read_time(&time);
+        desktop_update_time(&time);
+    }
+
+    /*vTaskDelay(5000 / portTICK_PERIOD_MS);
     ESP_LOGE(TAG, "Preparing for sleep");
-    pwr_mgmt_deep_sleep();
+    pwr_mgmt_deep_sleep();*/
 
 }
