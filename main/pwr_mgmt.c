@@ -1,3 +1,13 @@
+/**
+ * Copyright (c) 2020 Marius Vikhammer
+ * 
+ * This software is released under the MIT License.
+ * https://opensource.org/licenses/MIT
+ */
+
+
+
+
 #include "pwr_mgmt.h"
 
 #include "esp_log.h"

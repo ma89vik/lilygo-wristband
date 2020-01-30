@@ -1,3 +1,12 @@
+/**
+ * Copyright (c) 2020 Marius Vikhammer
+ * 
+ * This software is released under the MIT License.
+ * https://opensource.org/licenses/MIT
+ */
+
+
+
 #include "mpu9250.h"
 #include "driver/i2c.h"
 #include "esp_log.h"

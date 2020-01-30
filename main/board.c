@@ -1,9 +1,19 @@
+/**
+ * Copyright (c) 2020 Marius Vikhammer
+ * 
+ * This software is released under the MIT License.
+ * https://opensource.org/licenses/MIT
+ */
+
+
+
 #include "board.h"
 
 #include "driver/i2c.h"
 #include "driver/gpio.h"
 #include "mpu9250.h"
 #include "display.h"
+#include "battery.h"
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -13,7 +23,8 @@
 
 const i2c_port_t i2c_port = I2C_NUM_1;
 static void i2c_init();
-
+static void board_lcd_enable();
+static void board_lcd_backlight(bool enable);
 
 void board_init() {
     // Driver inits
@@ -22,7 +33,30 @@ void board_init() {
     // Peripherals init
     mpu9250_init(i2c_port);
     // RTC
+
+    board_lcd_enable();
+    board_lcd_backlight(true);
     display_init();
+
+    // Battery measurement
+    battery_init();
+    
+}
+
+
+static void board_lcd_enable(void)
+{
+    gpio_config_t pins_config = {
+        .pin_bit_mask = BIT64(TFT_RST_PIN) | BIT64(TFT_BL_PIN) | BIT64(TFT_DC_PIN),
+        .mode = GPIO_MODE_OUTPUT
+    };
+    ESP_ERROR_CHECK(gpio_config(&pins_config));
+    gpio_set_level(TFT_RST_PIN, 1);
+}
+
+static void board_lcd_backlight(bool enable)
+{
+    gpio_set_level(TFT_BL_PIN, enable);
     
 }
 

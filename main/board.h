@@ -2,6 +2,7 @@
 
 #include "esp_system.h"
 #include "driver/i2c.h"
+#include "soc/adc_channel.h"
 
 #define TFT_MOSI_PIN    19
 #define TFT_SCKL_PIN    18
@@ -13,8 +14,8 @@
 #define TOUCH_POWER_PIN 25
 #define IMU_INT_PIN     39
 #define RTC_INT_PIN     34
-#define BATTERY_ADC_PIN 35
-#define VBUS_ADC_PIN    36
+#define BATTERY_ADC_CH  ADC1_GPIO35_CHANNEL
+#define VBUS_ADC_PIN    ADC1_GPIO36_CHANNEL
 #define I2C_SDA_PIN     21
 #define I2C_SCL_PIN     22
 #define LED_PIN         4
