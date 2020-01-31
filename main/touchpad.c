@@ -27,19 +27,18 @@ static void IRAM_ATTR touchpad_isr() {
     int time_pressed;
     int do_yield =0;
 
- ESP_EARLY_LOGE(TAG, "pressed %d", pressed);
     if (pressed) {
-        touch_press_start = esp_timer_get_time();
+        touch_press_start = esp_timer_get_time()/1000;
     } else {
-        time_pressed = esp_timer_get_time() - touch_press_start;
+        time_pressed = esp_timer_get_time()/1000 - touch_press_start;
 
         if (time_pressed < LONG_PRESS_MS) {
-            esp_event_isr_post(INPUT_EVENT, INPUT_PRESS_EVENT, NULL, 0, &do_yield);
+            input_post_from_isr(INPUT_PRESS_EVENT, &do_yield);
         } 
         else if ( time_pressed < LONG_LONG_PRESS_MS) {
-            esp_event_isr_post(INPUT_EVENT, INPUT_LONG_PRESS_EVENT, NULL, 0, &do_yield);
+            input_post_from_isr(INPUT_LONG_PRESS_EVENT, &do_yield);
         } else {
-            esp_event_isr_post(INPUT_EVENT, INPUT_LONG_LONG_PRESS_EVENT, NULL, 0, &do_yield);
+            input_post_from_isr(INPUT_LONG_LONG_PRESS_EVENT, &do_yield);
         }
     }
 

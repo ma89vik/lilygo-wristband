@@ -123,21 +123,13 @@ void create_clock_cont(time_widget_t *time_widget)
     lv_label_set_text(time_widget->date , "");
 }
 
-void create_desktop()
+void desktop_create()
 {
     ESP_LOGE(TAG, "Creating desktop");
+    display_aquire();
 
     create_title_bar_cont(&title_widget);
     create_clock_cont(&time_widget);
-    /*Create the clock on the currently active screen*/
-    
+    display_release();   
 
-}
-
-void desktop_init()
-{
-    display_aquire();
-    create_desktop();
-    display_release();
-    
 }

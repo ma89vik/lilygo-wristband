@@ -22,3 +22,5 @@
 
 
 void board_init();
+void i2c_aquire();
+void i2c_release();

@@ -10,6 +10,7 @@
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include "sys/lock.h"
 
 #include "string.h"
 
@@ -49,10 +50,12 @@ typedef struct {
 } pcf8563_time_t;
 
 static i2c_port_t s_i2c_port;
+static _lock_t *s_i2c_lock;
 static char *TAG = "pcf8563";
 
-void pcf8563_init(i2c_port_t port) {
+void pcf8563_init(i2c_port_t port, _lock_t *i2c_lock) {
     s_i2c_port = port;
+    s_i2c_lock = i2c_lock;
 }
 
 static uint8_t bct8_to_uint8(bct8_t val) {
@@ -67,7 +70,7 @@ static bct8_t uint8_to_bct8(uint8_t val) {
 }
 
 static esp_err_t pcf8563_write_reg(uint8_t reg, uint8_t *data, size_t len) {
-
+    _lock_acquire(s_i2c_lock);
     i2c_cmd_handle_t cmd = i2c_cmd_link_create();
 
     i2c_master_start(cmd);
@@ -83,6 +86,7 @@ static esp_err_t pcf8563_write_reg(uint8_t reg, uint8_t *data, size_t len) {
     esp_err_t ret = i2c_master_cmd_begin(s_i2c_port, cmd, 500 / portTICK_RATE_MS);
 
     i2c_cmd_link_delete(cmd);
+    _lock_release(s_i2c_lock);
     return ret;
 }
 
@@ -90,6 +94,7 @@ static esp_err_t pcf8563_read_reg(uint8_t reg, uint8_t len, uint8_t *data) {
     if (len == 0) {
         return ESP_OK;
     }
+    _lock_acquire(s_i2c_lock);
     i2c_cmd_handle_t cmd = i2c_cmd_link_create();
 
     i2c_master_start(cmd);
@@ -107,6 +112,7 @@ static esp_err_t pcf8563_read_reg(uint8_t reg, uint8_t len, uint8_t *data) {
     esp_err_t ret = i2c_master_cmd_begin(s_i2c_port, cmd, 500 / portTICK_RATE_MS);
 
     i2c_cmd_link_delete(cmd);
+    _lock_release(s_i2c_lock);
     return ret;
 }
 

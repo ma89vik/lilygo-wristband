@@ -20,10 +20,14 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "freertos/queue.h"
+#include "sys/lock.h"
 
 #include "time.h"
 
 const i2c_port_t i2c_port = I2C_NUM_1;
+static _lock_t s_i2c_lock;
+
+
 static void i2c_init();
 static void board_lcd_enable();
 static void board_lcd_backlight(bool enable);
@@ -36,9 +40,9 @@ void board_init() {
 
 
     // Peripherals init
-    mpu9250_init(i2c_port);
+    mpu9250_init(i2c_port, &s_i2c_lock);
     // RTC
-    pcf8563_init(i2c_port);
+    pcf8563_init(i2c_port, &s_i2c_lock);
 
     board_lcd_enable();
     board_lcd_backlight(true);
@@ -85,5 +89,4 @@ static void i2c_init() {
     ESP_ERROR_CHECK(i2c_driver_install(i2c_port, I2C_MODE_MASTER, 0, 0, 0));
 
 }
-
 

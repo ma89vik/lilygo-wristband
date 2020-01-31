@@ -27,6 +27,8 @@
 #define MPU9250_ADDR_INT_ENABLE  0x38
 
 #define MPU9250_ADDR_ACCEL_XOUT_H 0x3B
+#define MPU9250_ADDR_ACCEL_YOUT_H 0x3D
+
 #define MPU9250_ADDR_GYRO_XOUT_H  0x43
 #define MPU9250_ADDR_PWR_MGMT_1   0x6B
 #define MPU9250_ADDR_PWR_MGMT_2   0x6C
@@ -69,8 +71,11 @@
 
 static char *TAG = "mpu9250";
 static i2c_port_t i2c_port;
+static _lock_t *s_i2c_lock;
 
 static esp_err_t mpu9250_write_reg(uint8_t address, uint8_t reg, uint8_t data) {
+
+    _lock_acquire(s_i2c_lock);
 
     i2c_cmd_handle_t cmd = i2c_cmd_link_create();
 
@@ -83,6 +88,7 @@ static esp_err_t mpu9250_write_reg(uint8_t address, uint8_t reg, uint8_t data) {
     esp_err_t ret = i2c_master_cmd_begin(i2c_port, cmd, 500 / portTICK_RATE_MS);
 
     i2c_cmd_link_delete(cmd);
+    _lock_release(s_i2c_lock);
     return ret;
 }
 
@@ -90,6 +96,7 @@ static esp_err_t mpu9250_read_reg(uint8_t address, uint8_t reg, uint8_t len, uin
     if (len == 0) {
         return ESP_OK;
     }
+    _lock_acquire(s_i2c_lock);
     i2c_cmd_handle_t cmd = i2c_cmd_link_create();
 
     i2c_master_start(cmd);
@@ -107,11 +114,13 @@ static esp_err_t mpu9250_read_reg(uint8_t address, uint8_t reg, uint8_t len, uin
     esp_err_t ret = i2c_master_cmd_begin(i2c_port, cmd, 500 / portTICK_RATE_MS);
 
     i2c_cmd_link_delete(cmd);
+    _lock_release(s_i2c_lock);
     return ret;
 }
 
-esp_err_t mpu9250_init(i2c_port_t port) { 
+esp_err_t mpu9250_init(i2c_port_t port, _lock_t *i2c_lock) { 
     i2c_port = port;
+    s_i2c_lock = i2c_lock;
     uint8_t whoami_val = 0;
     int ret = mpu9250_read_reg(MPU9250_ADRESS, MPU9250_ADDR_WHOAMI, 1, &whoami_val);
  
@@ -121,6 +130,15 @@ esp_err_t mpu9250_init(i2c_port_t port) {
     ESP_LOGI(TAG, "MPU9250 init successful");
 
     return ret;
+}
+
+void mpu9250_read_acc(int8_t *x, int8_t *y) {
+    uint8_t x_acc,y_acc;
+    mpu9250_read_reg(MPU9250_ADRESS, MPU9250_ADDR_ACCEL_XOUT_H, 1 , &x_acc);
+    mpu9250_read_reg(MPU9250_ADRESS, MPU9250_ADDR_ACCEL_YOUT_H, 1 , &y_acc);
+
+    *x = (int8_t) x_acc;
+    *y = (int8_t) y_acc;
 }
 
 

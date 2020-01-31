@@ -17,6 +17,8 @@
 #include "desktop.h"
 
 #include "pcf8563.h"
+#include "mpu9250.h"
+#include "acc_filter.h"
 #include "battery.h"
 #include "time.h"
 
@@ -28,13 +30,14 @@ void app_main(void)
     ESP_LOGE(TAG, "App started");
     
     board_init();
-    desktop_init();
+
     struct tm time;
     while(1) {
+
         pcf8563_read_time(&time);
         desktop_update_time(&time);
         desktop_update_battery(battery_lvl_read());
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
+        vTaskDelay(5000 / portTICK_PERIOD_MS);
     }
 
     /*vTaskDelay(5000 / portTICK_PERIOD_MS);
