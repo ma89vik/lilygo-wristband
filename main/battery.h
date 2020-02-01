@@ -10,4 +10,4 @@
 void battery_init();
 
 /* Returns the current battery level as a percentage between 0 - 100% */
-float battery_lvl_read();
+uint8_t battery_lvl_read();

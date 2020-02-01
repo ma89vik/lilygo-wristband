@@ -21,7 +21,7 @@
 #include "acc_filter.h"
 #include "battery.h"
 #include "time.h"
-
+#include "state_ctrl.h"
 
 static char* TAG = "main";
 
@@ -30,7 +30,7 @@ void app_main(void)
     ESP_LOGE(TAG, "App started");
     
     board_init();
-
+    state_ctrl_init();
     struct tm time;
     while(1) {
 

@@ -5,6 +5,7 @@
  * https://opensource.org/licenses/MIT
  */
 
+#include "display.h"
 
 
 #include <stdio.h>
@@ -15,19 +16,17 @@
 #include "esp_system.h"
 #include "driver/gpio.h"
 #include "lvgl/lvgl.h"
-#include "lv_examples/lv_apps/demo/demo.h"
 #include "esp_freertos_hooks.h"
-
 
 #include "sys/lock.h"
 #include "disp_spi.h"
 #include "st7735.h"
 #include "input.h"
-#include "desktop.h"
+#include "esp_log.h"
 
+static char *TAG = "display";
 
 static void IRAM_ATTR lv_tick_task(void);
-
 static lv_color_t *buf1;
 
 static _lock_t s_lock;
@@ -56,6 +55,7 @@ lv_indev_t* get_disp_driver( ) {
 	return input_dev;
 }
 
+
 void display_init()
 {
 	lv_init();
@@ -75,20 +75,20 @@ void display_init()
 	disp_drv.buffer = &disp_buf;
 	lv_disp_drv_register(&disp_drv);
 
-	/* Set up input callbacks */
-	
+	/* Set up input callbacks */	
     lv_indev_drv_t indev_drv;
     lv_indev_drv_init(&indev_drv);
     indev_drv.read_cb = input_read;
     indev_drv.type = LV_INDEV_TYPE_KEYPAD;
     input_dev = lv_indev_drv_register(&indev_drv);
 
+	
 	esp_register_freertos_tick_hook(lv_tick_task);
 	
 	xTaskCreate(display_lvgl_task, "littlevGL", 8000, NULL, 5, NULL);
-
-    desktop_create();
 }
+
+
 
 
 

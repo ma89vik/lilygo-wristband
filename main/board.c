@@ -21,6 +21,7 @@
 #include "freertos/task.h"
 #include "freertos/queue.h"
 #include "sys/lock.h"
+#include "esp_event.h"
 
 #include "time.h"
 
@@ -34,7 +35,8 @@ static void board_lcd_backlight(bool enable);
 
 void board_init() {
     //install gpio isr service
-    gpio_install_isr_service(0);
+    gpio_install_isr_service(0);    
+    ESP_ERROR_CHECK(esp_event_loop_create_default());
     // Driver inits
     i2c_init();
 
@@ -46,9 +48,10 @@ void board_init() {
 
     board_lcd_enable();
     board_lcd_backlight(true);
+    input_init();
     display_init();
 
-    input_init();
+    
 
     // Battery measurement
     battery_init();

@@ -3,8 +3,4 @@
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
 
-#pragma once
-
-#include "lvgl.h"
-
-void menu_create(lv_obj_t *scr);
+void ota_init();

@@ -3,8 +3,5 @@
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
 
-#pragma once
-
-#include "lvgl.h"
-
-void menu_create(lv_obj_t *scr);
+/* Init wifi + TCP/IP stack */
+void wifi_init(void);

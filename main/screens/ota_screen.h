@@ -4,8 +4,9 @@
 // https://opensource.org/licenses/MIT
 
 #pragma once
+#include "lvgl.h"
 
-void ota_screen_create();
+void ota_screen_create(lv_obj_t *scr);
 
 void ota_screen_set_progress(int pct);
 

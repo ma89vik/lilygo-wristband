@@ -39,7 +39,6 @@ bool input_read(lv_indev_drv_t * drv, lv_indev_data_t*data) {
     if (last_evt != 0) {
         /* Released the previously pressed key before handling any new events */
         data->key = last_evt;
-        ESP_LOGE(TAG, "evt %d rel", last_evt);
         data->state = LV_INDEV_STATE_REL;
         last_evt = 0;
 
@@ -47,11 +46,8 @@ bool input_read(lv_indev_drv_t * drv, lv_indev_data_t*data) {
     }
     
     if(xQueueReceive(input_event_queue, &evt, 0) == pdTRUE) {
-
-        ESP_LOGE(TAG, "evt %d press", evt);
         data->key = evt_to_lvgl_key(evt);
         data->state = LV_INDEV_STATE_PR;
-
         last_evt = evt;
 
         // Signal to lvgl that there is more events, to trigger release of key */

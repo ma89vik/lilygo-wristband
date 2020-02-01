@@ -42,8 +42,8 @@ LV_FONT_DECLARE(roboto_numbers_36)
 static time_widget_t time_widget;
 static title_widget_t title_widget;
 
-void create_title_bar_cont(title_widget_t *title) {
-    title->cont = lv_cont_create(lv_scr_act(), NULL);
+void create_title_bar_cont(title_widget_t *title, lv_obj_t *scr) {
+    title->cont = lv_cont_create(scr, NULL);
 
     lv_obj_set_auto_realign(title->cont, true);                    /*Auto realign when the size changes*/
     lv_obj_align(title->cont, NULL, LV_ALIGN_IN_TOP_RIGHT, 0, 0);
@@ -68,11 +68,11 @@ void create_title_bar_cont(title_widget_t *title) {
     lv_label_set_text(title->battery, "");
 }
 
-void desktop_update_battery(float battery_pct) {
+void desktop_update_battery(uint8_t battery_pct) {
     char bat_str[10];
     display_aquire();
 
-    snprintf(bat_str, sizeof(bat_str), "%.2f%%", battery_lvl_read());
+    snprintf(bat_str, sizeof(bat_str), "%d%%", battery_lvl_read());
     lv_label_set_text(title_widget.battery_pct, bat_str);
     lv_label_set_text(title_widget.battery, LV_SYMBOL_BATTERY_FULL);
     display_release();
@@ -93,9 +93,9 @@ void desktop_update_time(struct tm *time) {
     display_release();
 }
 
-void create_clock_cont(time_widget_t *time_widget)
+void create_clock_cont(time_widget_t *time_widget, lv_obj_t *scr)
 {
-    time_widget->cont = lv_cont_create(lv_scr_act(), NULL);
+    time_widget->cont = lv_cont_create(scr, NULL);
    
     lv_cont_set_style(time_widget->cont, LV_LABEL_STYLE_MAIN, &lv_style_transp);
 
@@ -123,13 +123,16 @@ void create_clock_cont(time_widget_t *time_widget)
     lv_label_set_text(time_widget->date , "");
 }
 
-void desktop_create()
+
+
+void desktop_create(lv_obj_t *scr)
 {
     ESP_LOGE(TAG, "Creating desktop");
     display_aquire();
 
-    create_title_bar_cont(&title_widget);
-    create_clock_cont(&time_widget);
+    create_title_bar_cont(&title_widget, scr);
+    create_clock_cont(&time_widget,scr );
+
     display_release();   
 
 }

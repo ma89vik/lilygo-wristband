@@ -8,13 +8,13 @@
 #include "touchpad.h"
 #include "board.h"
 #include "input.h"
+#include "state_ctrl.h"
 
 #include "esp_log.h"
 #include "driver/gpio.h"
 #include "esp_timer.h"
 
 #define LONG_PRESS_MS 2000
-#define LONG_LONG_PRESS_MS 4000
 
 static char *TAG = "touchpad";
 
@@ -26,6 +26,8 @@ static void IRAM_ATTR touchpad_isr() {
     int pressed = gpio_get_level(TOUCH_PIN);
     int time_pressed;
     int do_yield =0;
+    int do_yield2 =0;
+
 
     if (pressed) {
         touch_press_start = esp_timer_get_time()/1000;
@@ -33,16 +35,18 @@ static void IRAM_ATTR touchpad_isr() {
         time_pressed = esp_timer_get_time()/1000 - touch_press_start;
 
         if (time_pressed < LONG_PRESS_MS) {
-            input_post_from_isr(INPUT_PRESS_EVENT, &do_yield);
+            input_post_from_isr(INPUT_PRESS_EVENT, &do_yield);            
+            /* Also post to event base used for state control */
+            esp_event_isr_post(STATE_CTRL_EVT, STATE_CTRL_PRESS_EVT, NULL, 0, &do_yield2);
         } 
-        else if ( time_pressed < LONG_LONG_PRESS_MS) {
+        else {
             input_post_from_isr(INPUT_LONG_PRESS_EVENT, &do_yield);
-        } else {
-            input_post_from_isr(INPUT_LONG_LONG_PRESS_EVENT, &do_yield);
+            /* Also post to event base used for state control */
+            esp_event_isr_post(STATE_CTRL_EVT, STATE_CTRL_LONG_PRESS_EVT, NULL, 0, &do_yield2);
         }
     }
 
-    if(do_yield) {
+    if(do_yield || do_yield2) {
         portYIELD_FROM_ISR();
     }
 
