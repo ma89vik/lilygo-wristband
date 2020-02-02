@@ -88,7 +88,7 @@ void wifi_init_sta(void)
              WIFI_SSID, WIFI_PASS);
 }
 
-void wifi_init(void)
+void wifi_init_and_connect(void)
 {
     //Initialize NVS
     esp_err_t ret = nvs_flash_init();
@@ -100,4 +100,6 @@ void wifi_init(void)
     
     ESP_LOGI(TAG, "ESP_WIFI_MODE_STA");
     wifi_init_sta();
+
+    xEventGroupWaitBits(s_wifi_event_group, WIFI_CONNECTED_BIT, pdFALSE, pdTRUE, portMAX_DELAY);
 }

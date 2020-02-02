@@ -14,7 +14,7 @@
 #include "driver/gpio.h"
 #include "esp_timer.h"
 
-#define LONG_PRESS_MS 2000
+#define LONG_PRESS_MS 1000
 
 static char *TAG = "touchpad";
 
@@ -37,12 +37,13 @@ static void IRAM_ATTR touchpad_isr() {
         if (time_pressed < LONG_PRESS_MS) {
             input_post_from_isr(INPUT_PRESS_EVENT, &do_yield);            
             /* Also post to event base used for state control */
-            esp_event_isr_post(STATE_CTRL_EVT, STATE_CTRL_PRESS_EVT, NULL, 0, &do_yield2);
+            state_ctrl_isr_post_evt(STATE_CTRL_PRESS_EVT, &do_yield2);
         } 
         else {
             input_post_from_isr(INPUT_LONG_PRESS_EVENT, &do_yield);
             /* Also post to event base used for state control */
-            esp_event_isr_post(STATE_CTRL_EVT, STATE_CTRL_LONG_PRESS_EVT, NULL, 0, &do_yield2);
+            state_ctrl_isr_post_evt(STATE_CTRL_LONG_PRESS_EVT, &do_yield2);
+
         }
     }
 

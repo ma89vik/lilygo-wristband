@@ -22,7 +22,7 @@
 
 #include "ota_screen.h"
 
-#define FIRMWARE_UPGRADE_URL "192.168"
+#define FIRMWARE_UPGRADE_URL "https://192.168.1.110:8000/t_wristband.bin"
 
 static const char *TAG = "advanced_https_ota_example";
 extern const uint8_t server_cert_pem_start[] asm("_binary_ca_cert_pem_start");
@@ -41,20 +41,22 @@ static esp_err_t validate_image_header(esp_app_desc_t *new_app_info)
     }
 
     if (memcmp(new_app_info->version, running_app_info.version, sizeof(new_app_info->version)) == 0) {
-        ESP_LOGW(TAG, "Current running version is the same as a new. We will not continue the update.");
-        return ESP_FAIL;
+        ESP_LOGW(TAG, "Current running version is the same as a new. We STILL continue the update.");
+        return ESP_OK;
     }
     return ESP_OK;
 }
 
 void advanced_ota_example_task(void *pvParameter)
 {
-    ESP_LOGI(TAG, "Starting Advanced OTA example");
+    ESP_LOGI(TAG, "Starting OTA update");
+ 
 
     esp_err_t ota_finish_err = ESP_OK;
     esp_http_client_config_t config = {
         .url = FIRMWARE_UPGRADE_URL,
         .cert_pem = (char *)server_cert_pem_start,
+        .skip_cert_common_name_check = true,
     };
 
     esp_https_ota_config_t ota_config = {
@@ -68,6 +70,8 @@ void advanced_ota_example_task(void *pvParameter)
         vTaskDelete(NULL);
     }
 
+    ota_screen_set_msg("Downloading");
+
     esp_app_desc_t app_desc;
     err = esp_https_ota_get_img_desc(https_ota_handle, &app_desc);
     if (err != ESP_OK) {
@@ -80,6 +84,9 @@ void advanced_ota_example_task(void *pvParameter)
         goto ota_end;
     }
 
+
+
+    int last_pct = 0;
     while (1) {
         err = esp_https_ota_perform(https_ota_handle);
         if (err != ESP_ERR_HTTPS_OTA_IN_PROGRESS) {
@@ -88,15 +95,22 @@ void advanced_ota_example_task(void *pvParameter)
         // esp_https_ota_perform returns after every read operation which gives user the ability to
         // monitor the status of OTA upgrade by calling esp_https_ota_get_image_len_read, which gives length of image
         // data read so far.
-        ESP_LOGD(TAG, "Image bytes read: %d", esp_https_ota_get_image_len_read(https_ota_handle));
+        ESP_LOGD(TAG, "Image bytes read: %d of %d", esp_https_ota_get_image_len_read(https_ota_handle), esp_https_ota_get_content_length(https_ota_handle));
+        int pct = 100*esp_https_ota_get_image_len_read(https_ota_handle)/esp_https_ota_get_content_length(https_ota_handle);
+        
+        ota_screen_set_progress( pct);
+        
+        
     }
 
-    if (esp_https_ota_is_complete_data_received(&https_ota_handle) != true) {
+    if (esp_https_ota_is_complete_data_received(https_ota_handle) != true) {
         // the OTA image was not completely received and user can customise the response to this situation.
         ESP_LOGE(TAG, "Complete data was not received.");
     }
 
 ota_end:
+    ota_screen_set_msg("Finishing");
+
     ota_finish_err = esp_https_ota_finish(https_ota_handle);
     if ((err == ESP_OK) && (ota_finish_err == ESP_OK)) {
         ESP_LOGI(TAG, "ESP_HTTPS_OTA upgrade successful. Rebooting ...");
@@ -115,8 +129,8 @@ void ota_init(void)
 {
     
     // Initialize Wifi + TCP/IP stack.
-    //wifi_init();
+    wifi_init_and_connect();
     
-    //xTaskCreate(&advanced_ota_example_task, "advanced_ota_example_task", 1024 * 8, NULL, 5, NULL);
+    xTaskCreate(&advanced_ota_example_task, "advanced_ota_example_task", 1024 * 20, NULL, 3, NULL);
    
 }

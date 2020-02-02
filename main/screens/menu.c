@@ -26,13 +26,15 @@ lv_obj_t *menu_list;
 
 static void ota_button_clicked_evt(lv_obj_t * obj, lv_event_t event) {
     if(event == LV_EVENT_CLICKED) {
-        esp_event_post(STATE_CTRL_EVT, STATE_CTRL_OTA_SCREEN_EVT, NULL, 0, 0);
+        state_ctrl_post_evt(STATE_CTRL_OTA_SCREEN_EVT);
 
     }
 }
 
 void menu_create(lv_obj_t *scr)
 {
+    display_aquire();
+    
     lv_group_t * g = lv_group_create();
 
     /*Create a list*/
@@ -52,4 +54,7 @@ void menu_create(lv_obj_t *scr)
     lv_group_set_focus_cb(g, focus_cb );
 
     lv_scr_load(scr);
+
+    display_release();
+
 }

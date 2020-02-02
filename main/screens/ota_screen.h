@@ -10,4 +10,4 @@ void ota_screen_create(lv_obj_t *scr);
 
 void ota_screen_set_progress(int pct);
 
-void ota_screen_set_error(char* error);
+void ota_screen_set_msg(char* msg_str);

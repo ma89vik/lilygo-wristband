@@ -2,24 +2,10 @@ import re
 import os
 import sys
 import socket
-import BaseHTTPServer
-import SimpleHTTPServer
+from http.server import SimpleHTTPRequestHandler, HTTPServer
 from threading import Thread
 import ssl
-
-try:
-    import IDF
-except ImportError:
-    # this is a test case write with tiny-test-fw.
-    # to run test cases outside tiny-test-fw,
-    # we need to set environment variable `TEST_FW_PATH`,
-    # then get and insert `TEST_FW_PATH` to sys path before import FW module
-    test_fw_path = os.getenv("TEST_FW_PATH")
-    if test_fw_path and test_fw_path not in sys.path:
-        sys.path.insert(0, test_fw_path)
-    import IDF
-
-import DUT
+import time
 
 server_cert = "-----BEGIN CERTIFICATE-----\n" \
               "MIIDXTCCAkWgAwIBAgIJAP4LF7E72HakMA0GCSqGSIb3DQEBCwUAMEUxCzAJBgNV\n"\
@@ -81,25 +67,25 @@ def get_my_ip():
     return my_ip
 
 
-def start_https_server(ota_image_dir, server_ip, server_port):
+def start_https_server( server_ip, server_port):
     # parser = argparse.ArgumentParser()
     # parser.add_argument('-p', '--port', dest='port', type= int,
     #     help= "Server Port", default= 8000)
     # args = parser.parse_args()
-    os.chdir(ota_image_dir)
 
-    server_file = os.path.join(ota_image_dir, "server_cert.pem")
+
+    server_file = "server_cert.pem"
     cert_file_handle = open(server_file, "w+")
     cert_file_handle.write(server_cert)
     cert_file_handle.close()
 
-    key_file = os.path.join(ota_image_dir, "server_key.pem")
+    key_file =  "server_key.pem"
     key_file_handle = open("server_key.pem", "w+")
     key_file_handle.write(server_key)
     key_file_handle.close()
 
-    httpd = BaseHTTPServer.HTTPServer((server_ip, server_port),
-                                      SimpleHTTPServer.SimpleHTTPRequestHandler)
+    httpd = HTTPServer((server_ip, server_port),
+                                      SimpleHTTPRequestHandler)
 
     httpd.socket = ssl.wrap_socket(httpd.socket,
                                    keyfile=key_file,
@@ -107,40 +93,10 @@ def start_https_server(ota_image_dir, server_ip, server_port):
     httpd.serve_forever()
 
 
-@IDF.idf_example_test(env_tag="Example_WIFI")
-def test_examples_protocol_simple_ota_example(env, extra_data):
-    """
-    steps: |
-      1. join AP
-      2. Fetch OTA image over HTTPS
-      3. Reboot with the new OTA image
-    """
-    dut1 = env.get_dut("simple_ota_example", "examples/system/ota/simple_ota_example")
-    # check and log bin size
-    binary_file = os.path.join(dut1.app.binary_path, "simple_ota.bin")
-    bin_size = os.path.getsize(binary_file)
-    IDF.log_performance("simple_ota_bin_size", "{}KB".format(bin_size // 1024))
-    IDF.check_performance("simple_ota_bin_size", bin_size // 1024)
-    # start test
-    host_ip = get_my_ip()
-    thread1 = Thread(target=start_https_server, args=(dut1.app.binary_path, host_ip, 8000))
-    thread1.daemon = True
-    thread1.start()
-    dut1.start_app()
-    dut1.expect("Loaded app from partition at offset 0x10000", timeout=30)
-    try:
-        ip_address = dut1.expect(re.compile(r" sta ip: ([^,]+),"), timeout=30)
-        print("Connected to AP with IP: {}".format(ip_address))
-    except DUT.ExpectTimeout:
-        raise ValueError('ENV_TEST_FAILURE: Cannot connect to AP')
-        thread1.close()
-    dut1.expect("Starting OTA example", timeout=30)
-
-    print("writing to device: {}".format("https://" + host_ip + ":8000/simple_ota.bin"))
-    dut1.write("https://" + host_ip + ":8000/simple_ota.bin")
-    dut1.expect("Loaded app from partition at offset 0x110000", timeout=60)
-    dut1.expect("Starting OTA example", timeout=30)
-
 
 if __name__ == '__main__':
-    test_examples_protocol_simple_ota_example()
+    print("Start OTA serrver")
+    start_https_server("", 8000)
+
+    while (True):
+        time.sleep(1)

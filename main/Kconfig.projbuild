@@ -1,0 +1,10 @@
+menu "Project Configuration"
+
+    config OTA_ENABLE
+        bool "OTA Update enable"
+        default n
+        help
+            Enable OTA Update functionality
+
+
+endmenu

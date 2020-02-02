@@ -162,7 +162,7 @@ void mpu9250_motion_wakeup_enable() {
     mpu9250_write_reg(MPU9250_ADRESS, MPU9250_ADDR_INT_ENABLE, 1 << MPU9250_WAKE_ON_MOTION_INT_EN_PIN);
 
     /* Enable HW intelligence, set accel treshhold */
-    mpu9250_write_reg(MPU9250_ADRESS, MPU9250_ADDR_WAKE_MOTION_THR, 0x20);
+    mpu9250_write_reg(MPU9250_ADRESS, MPU9250_ADDR_WAKE_MOTION_THR, 0xFF);
     mpu9250_write_reg(MPU9250_ADRESS, MPU9250_ADDR_MOT_DETECT_CTRL, 0xC0);
 
 

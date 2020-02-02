@@ -71,10 +71,24 @@ void create_title_bar_cont(title_widget_t *title, lv_obj_t *scr) {
 void desktop_update_battery(uint8_t battery_pct) {
     char bat_str[10];
     display_aquire();
-
-    snprintf(bat_str, sizeof(bat_str), "%d%%", battery_lvl_read());
+    snprintf(bat_str, sizeof(bat_str), "%d%%", battery_pct);
     lv_label_set_text(title_widget.battery_pct, bat_str);
-    lv_label_set_text(title_widget.battery, LV_SYMBOL_BATTERY_FULL);
+
+    if (battery_pct > 90) {
+        lv_label_set_text(title_widget.battery, LV_SYMBOL_BATTERY_FULL);
+    }
+    else if (battery_pct > 65 ) {
+        lv_label_set_text(title_widget.battery, LV_SYMBOL_BATTERY_3);
+    }
+    else if (battery_pct > 40 ) {
+        lv_label_set_text(title_widget.battery, LV_SYMBOL_BATTERY_2);
+    }
+    else if (battery_pct > 10 ) {
+        lv_label_set_text(title_widget.battery, LV_SYMBOL_BATTERY_1);
+    } else {
+        lv_label_set_text(title_widget.battery, LV_SYMBOL_BATTERY_EMPTY);
+    }
+
     display_release();
 
 }

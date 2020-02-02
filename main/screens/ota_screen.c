@@ -8,45 +8,82 @@
 
 #include "lvgl.h"
 #include "esp_log.h"
+#include "display.h"
 
 static char *TAG = "ota screen";
 
 static lv_obj_t *progress_arc, *cont, *msg;
 
 void ota_screen_create(lv_obj_t *scr) {
-  ESP_LOGI(TAG, "Creating OTA update screen");
-  
-  /*Create a window*/
-  cont = lv_cont_create(scr, NULL);
-                      
+    ESP_LOGI(TAG, "Creating OTA update screen");
+                        
+    display_aquire();
 
-  /*Create style for the Arcs*/
-  static lv_style_t style;
-  lv_style_copy(&style, &lv_style_plain);
-  style.line.color = LV_COLOR_BLUE;           /*Arc color*/
-  style.line.width = 8;                       /*Arc width*/
+    /* Create label for title */
+    lv_obj_t *title = lv_label_create(scr, NULL);
+    lv_label_set_text(title, "OTA");
+    lv_obj_align(title, NULL, LV_ALIGN_IN_TOP_MID, 0, 0);
+    lv_label_set_align(title, LV_LABEL_ALIGN_CENTER);
 
-  /*Create an Arc*/
-  progress_arc = lv_arc_create(cont, NULL);
-  lv_arc_set_style(progress_arc, LV_ARC_STYLE_MAIN, &style);          /*Use the new style*/
-  lv_arc_set_angles(progress_arc, 180, 200);
-  lv_obj_set_size(progress_arc, 50, 50);
-  lv_obj_align(progress_arc, NULL, LV_ALIGN_CENTER, 0, 0);
 
-  /* Create label for status update/error message */
-  //msg = lv_label_create(win, NULL);
-  //lv_label_set_long_mode(msg, LV_LABEL_LONG_BREAK);
-  //lv_label_set_text(msg, "Initializing OTA update");
+    /*Create style for the Arcs*/
+    static lv_style_t arc_style;
+    lv_style_copy(&arc_style, &lv_style_plain);
+    arc_style.line.color = LV_COLOR_BLUE;           
+    arc_style.line.width = 8;                      
 
-  lv_scr_load(scr);
-  
+    /*Create an Arc*/
+    progress_arc = lv_arc_create(scr, NULL);
+
+    lv_obj_set_hidden(progress_arc, 1);
+
+    lv_arc_set_style(progress_arc, LV_ARC_STYLE_MAIN, &arc_style); 
+
+    lv_obj_set_size(progress_arc, 50, 50);
+    lv_obj_align(progress_arc, NULL, LV_ALIGN_CENTER, 0, 0);
+
+    /* Create status msg label */
+    msg = lv_label_create(scr, NULL);
+    lv_obj_align(msg, NULL, LV_ALIGN_IN_BOTTOM_LEFT, 0, -10);
+    lv_label_set_align(msg, LV_LABEL_ALIGN_LEFT);
+
+    static lv_style_t msg_style;
+    lv_style_copy(&msg_style, &lv_style_plain);
+    msg_style.text.font = &lv_font_roboto_12;
+    lv_label_set_style(msg, LV_LABEL_STYLE_MAIN, &msg_style);
+    lv_label_set_text(msg, "Connecting");
+
+    lv_scr_load(scr);
+
+    display_release();
+
+
 }
 
 void ota_screen_set_progress(int pct) {
-  lv_arc_set_angles(progress_arc, 180, 180);
+    
+    display_aquire();
+    
+    uint16_t angle = pct*3.6;
+    if(angle >= 359) {
+        angle = 359;
+    } 
+    if(angle < 180) {
+        lv_arc_set_angles(progress_arc, 180-angle ,180);
+    } else {
+        lv_arc_set_angles(progress_arc, 540-angle ,180);
+    }
+
+    if (lv_obj_get_hidden(progress_arc)) {
+        lv_obj_set_hidden(progress_arc, 0);
+    }
+    
+
+    display_release();
 }
 
-void ota_screen_set_error(char* error) {
-    lv_label_set_text(msg, error);
-
+void ota_screen_set_msg(char* msg_str) {
+    display_aquire();
+    lv_label_set_text(msg, msg_str);
+    display_release();
 }
