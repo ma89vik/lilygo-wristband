@@ -11,18 +11,19 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "esp_log.h"
-#include "driver/gpio.h"
 #include "board.h"
-#include "pwr_mgmt.h"
 #include "desktop.h"
+#include "weather.h"
 
-#include "pcf8563.h"
-#include "mpu9250.h"
-#include "acc_filter.h"
 #include "battery.h"
 #include "time.h"
+#include "sys/time.h"
 #include "state_ctrl.h"
+#include "nvs_flash.h"
 #include "esp_sleep.h"
+#include "esp_netif.h"
+#include "esp_event.h"
+#include "esp_wifi.h"
 
 static char* TAG = "main";
 
@@ -142,11 +143,9 @@ void stats_task() {
     }
 }
 
-void app_main(void)
-{
-    ESP_LOGE(TAG, "App started");
-    
-     switch (esp_sleep_get_wakeup_cause()) {
+static void print_wakeup_cause() {
+
+    switch (esp_sleep_get_wakeup_cause()) {
         case ESP_SLEEP_WAKEUP_EXT1: {
             uint64_t wakeup_pin_mask = esp_sleep_get_ext1_wakeup_status();
             if (wakeup_pin_mask != 0) {
@@ -160,24 +159,75 @@ void app_main(void)
 
         default:
             ESP_LOGI(TAG, "Not a deep sleep reset");
-     }
-    xTaskCreate(stats_task, "real time stats task", 2000, NULL, 10, NULL);
+        }
+}
 
-    board_init();
-    state_ctrl_init();
-    struct tm time;
-    
-    while(1) {
-
-        pcf8563_read_time(&time);
-        desktop_update_time(&time);
-        desktop_update_battery(battery_lvl_read());
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
-        
+/*
+void nvs_write_key() {
+    int err;
+    nvs_handle_t my_handle;
+    err = nvs_open("storage", NVS_READWRITE, &my_handle);
+    if (err != ESP_OK) {
+        printf("Error (%s) opening NVS handle!\n", esp_err_to_name(err));
+    } else {
+        printf("Done\n");
     }
 
-    /*vTaskDelay(5000 / portTICK_PERIOD_MS);
-    ESP_LOGE(TAG, "Preparing for sleep");
-    pwr_mgmt_deep_sleep();*/
+    err = nvs_set_str(my_handle, "ow_api_key", "cf1552acf5ff56dbea4f90b3c201a5b5");
+    printf((err != ESP_OK) ? "Failed!\n" : "Done\n");
 
+    // Commit written value.
+    // After setting any values, nvs_commit() must be called to ensure changes are written
+    // to flash storage. Implementations may write to storage at other times,
+    // but this is not guaranteed.
+    printf("Committing updates in NVS ... ");
+    err = nvs_commit(my_handle);
+    printf((err != ESP_OK) ? "Failed!\n" : "Done\n");
+
+    // Close
+    nvs_close(my_handle);
+}*/
+
+
+
+void nvs_init() {
+    // Initialize NVS
+    esp_err_t err = nvs_flash_init();
+    if (err == ESP_ERR_NVS_NO_FREE_PAGES || err == ESP_ERR_NVS_NEW_VERSION_FOUND) {
+        // NVS partition was truncated and needs to be erased
+        // Retry nvs_flash_init
+        ESP_ERROR_CHECK(nvs_flash_erase());
+        err = nvs_flash_init();
+    }
+     ESP_ERROR_CHECK( err );
+}
+
+void app_main(void) {
+
+    ESP_LOGI(TAG, "ESP32 Smart Watch started");
+   
+    xTaskCreate(stats_task, "real time stats task", 2000, NULL, 10, NULL);
+
+    /* Init sub systems */
+    
+    nvs_init();
+    /* Init board and application */
+    board_init();
+    state_ctrl_init();
+
+    //wifi_init_and_connect();
+    weather_cfg_t cfg = {
+        .loc = "shanghai",
+        .pm25_cb = desktop_update_pm25,
+        .weather_cb = desktop_update_weather,
+    };
+    weather_handle_t w = weather_init(&cfg);
+
+    weather_update(w);
+
+    while(1) {        
+        desktop_update_time();
+        desktop_update_battery(battery_lvl_read());
+        vTaskDelay(1000 / portTICK_PERIOD_MS);        
+    }
 }

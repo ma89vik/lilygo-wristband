@@ -82,7 +82,10 @@ void display_init()
     indev_drv.type = LV_INDEV_TYPE_KEYPAD;
     input_dev = lv_indev_drv_register(&indev_drv);
 
-	
+	/*Initialize the night theme */
+	lv_theme_t *th = lv_theme_night_init(100, NULL);
+	lv_theme_set_current(th);
+
 	esp_register_freertos_tick_hook_for_cpu(lv_tick_task, 0);
 	xTaskCreatePinnedToCore(display_lvgl_task, "littlevGL", 16000, NULL, 10, NULL, 0);
 }

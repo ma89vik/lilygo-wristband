@@ -127,7 +127,7 @@ ota_end:
 
 void ota_init(void)
 {
-    
+    ESP_LOGI(TAG, "Initializing OTA");
     // Initialize Wifi + TCP/IP stack.
     wifi_init_and_connect();
     

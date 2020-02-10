@@ -32,11 +32,11 @@ static _lock_t s_i2c_lock;
 static void i2c_init();
 static void board_lcd_enable();
 static void board_lcd_backlight(bool enable);
+static void board_clock_init();
 
 void board_init() {
     //install gpio isr service
     gpio_install_isr_service(0);    
-    ESP_ERROR_CHECK(esp_event_loop_create_default());
     // Driver inits
     i2c_init();
 
@@ -45,6 +45,8 @@ void board_init() {
     mpu9250_init(i2c_port, &s_i2c_lock);
     // RTC
     pcf8563_init(i2c_port, &s_i2c_lock);
+    board_clock_init();
+
 
     board_lcd_enable();
     board_lcd_backlight(true);
@@ -93,3 +95,19 @@ static void i2c_init() {
 
 }
 
+
+/* Updates the board time according to the external RTC*/
+static void board_clock_init() {
+        
+    struct tm cur_time;
+    pcf8563_read_time(&cur_time);
+
+
+    printf("prev time %ld\n", time(NULL));
+    time_t t = mktime(&cur_time);
+    printf("Setting time: %s \n", asctime(&cur_time));
+    struct timeval now = { .tv_sec = t };
+    settimeofday(&now, NULL);
+
+    printf("new time %ld\n", time(NULL));
+}
