@@ -39,7 +39,7 @@ void menu_create(lv_obj_t *scr)
 
     /*Create a list*/
     menu_list = lv_list_create(scr, NULL);
-    lv_obj_set_size(menu_list, 160, 200);
+    lv_obj_set_size(menu_list, LV_HOR_RES_MAX, LV_VER_RES_MAX);
     lv_obj_align(menu_list, NULL, LV_ALIGN_CENTER, 0, 0);
 
     /*Add buttons to the list*/
@@ -48,6 +48,15 @@ void menu_create(lv_obj_t *scr)
 
     list_btn = lv_list_add_btn(menu_list, LV_SYMBOL_DOWNLOAD, "OTA");
     lv_obj_set_event_cb(list_btn, ota_button_clicked_evt);
+    lv_group_add_obj(g, list_btn);
+
+    list_btn = lv_list_add_btn(menu_list, LV_SYMBOL_CHARGE, "Laser");
+    lv_group_add_obj(g, list_btn);
+
+    list_btn = lv_list_add_btn(menu_list, LV_SYMBOL_CUT, "Sharks");
+    lv_group_add_obj(g, list_btn);
+
+    list_btn = lv_list_add_btn(menu_list, LV_SYMBOL_BELL, "DND");
     lv_group_add_obj(g, list_btn);
 
     lv_indev_set_group(get_disp_driver(), g);

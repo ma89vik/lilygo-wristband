@@ -117,7 +117,7 @@ CONFIG_PARTITION_TABLE_MD5=y
 #
 # Project Configuration
 #
-# CONFIG_OTA_ENABLE is not set
+CONFIG_OTA_ENABLE=y
 # end of Project Configuration
 
 #

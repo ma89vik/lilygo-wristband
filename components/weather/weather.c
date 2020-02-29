@@ -23,7 +23,7 @@
 
 #define LOC_STR_MAX_LEN 30
 #define NVS_WEATHER_KEY "weather_data"
-#define WEATHER_UPDATE_PERIOD_S 10
+#define WEATHER_UPDATE_PERIOD_S 3600
 
 static char *TAG = "weather";
 

@@ -21,6 +21,14 @@ void ota_screen_create(lv_obj_t *scr) {
 
     /* Create label for title */
     lv_obj_t *title = lv_label_create(scr, NULL);
+
+
+    static lv_style_t title_style;
+    lv_style_copy(&title_style, &lv_style_plain);
+    title_style.text.font = &lv_font_roboto_28;
+    title_style.text.color = LV_COLOR_WHITE;
+    lv_label_set_style(title, LV_LABEL_STYLE_MAIN, &title_style);
+
     lv_label_set_text(title, "OTA");
     lv_obj_align(title, NULL, LV_ALIGN_IN_TOP_MID, 0, 0);
     lv_label_set_align(title, LV_LABEL_ALIGN_CENTER);
@@ -29,7 +37,7 @@ void ota_screen_create(lv_obj_t *scr) {
     /*Create style for the Arcs*/
     static lv_style_t arc_style;
     lv_style_copy(&arc_style, &lv_style_plain);
-    arc_style.line.color = LV_COLOR_BLUE;           
+    arc_style.line.color = LV_COLOR_YELLOW;           
     arc_style.line.width = 8;                      
 
     /*Create an Arc*/
@@ -50,6 +58,7 @@ void ota_screen_create(lv_obj_t *scr) {
     static lv_style_t msg_style;
     lv_style_copy(&msg_style, &lv_style_plain);
     msg_style.text.font = &lv_font_roboto_12;
+    msg_style.text.color = LV_COLOR_WHITE;
     lv_label_set_style(msg, LV_LABEL_STYLE_MAIN, &msg_style);
     lv_label_set_text(msg, "Connecting");
 

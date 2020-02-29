@@ -206,7 +206,7 @@ void app_main(void) {
 
     ESP_LOGI(TAG, "ESP32 Smart Watch started");
    
-    xTaskCreate(stats_task, "real time stats task", 2000, NULL, 10, NULL);
+    //xTaskCreate(stats_task, "real time stats task", 2000, NULL, 10, NULL);
 
     /* Init sub systems */
     

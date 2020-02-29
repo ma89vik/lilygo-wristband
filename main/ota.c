@@ -22,7 +22,7 @@
 
 #include "ota_screen.h"
 
-#define FIRMWARE_UPGRADE_URL "https://192.168.1.110:8000/t_wristband.bin"
+#define FIRMWARE_UPGRADE_URL "https://192.168.0.103:8000/t_wristband.bin"
 
 static const char *TAG = "advanced_https_ota_example";
 extern const uint8_t server_cert_pem_start[] asm("_binary_ca_cert_pem_start");
