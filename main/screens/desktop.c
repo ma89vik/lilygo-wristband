@@ -206,13 +206,13 @@ static void desktop_create_weather_widget(weather_widget_t *weather_widget, lv_o
     lv_img_set_src(weather_widget->weather_icon, &d2_icon);
 
     lv_label_set_style(weather_widget->temp, LV_LABEL_STYLE_MAIN, &weather_widget->weather_style);
-    lv_label_set_text(weather_widget->temp , "10");
+    lv_label_set_text(weather_widget->temp , "15.2");
 
     /* PM 2.5 */
     weather_widget->pm25 =  lv_label_create(weather_widget->cont, NULL);
 
     lv_label_set_style(weather_widget->pm25, LV_LABEL_STYLE_MAIN, &weather_widget->weather_style);
-    lv_label_set_text(weather_widget->pm25 , "PM 2.5: 0");
+    lv_label_set_text(weather_widget->pm25 , "PM 2.5: 70.2");
 
 }
 

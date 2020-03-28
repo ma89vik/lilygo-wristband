@@ -11,6 +11,7 @@ typedef enum {
     STATE_CTRL_PRESS_EVT,
     STATE_CTRL_LONG_PRESS_EVT,
     STATE_CTRL_OTA_SCREEN_EVT,
+    STATE_CTRL_SNTP_SCREEN_EVT,
 } state_ctrl_evt_id;
 
 

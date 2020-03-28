@@ -48,7 +48,7 @@ static void imu_get_input_task(void* vParameters) {
         accFilter_put(&filt_y, (float)acc_y);   
 
         y = accFilter_get(&filt_y);  
-        ESP_LOGE(TAG, "y: %f", y);
+        //ESP_LOGE(TAG, "y: %f", y);
         if (y > INPUT_TRESH_POS_Y) {
             if(imu_input_limit(&timestamp_last_y_input)){
                 ESP_LOGE(TAG, "DOWN");

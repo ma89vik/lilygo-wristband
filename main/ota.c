@@ -18,7 +18,7 @@
 #include "esp_ota_ops.h"
 #include "esp_http_client.h"
 #include "esp_https_ota.h"
-#include "wifi.h"
+#include "wifi_manager.h"
 
 #include "ota_screen.h"
 
@@ -129,7 +129,7 @@ void ota_init(void)
 {
     ESP_LOGI(TAG, "Initializing OTA");
     // Initialize Wifi + TCP/IP stack.
-    wifi_init_and_connect();
+    wifi_manager_request_access();
     
     xTaskCreate(&advanced_ota_example_task, "advanced_ota_example_task", 1024 * 20, NULL, 3, NULL);
    

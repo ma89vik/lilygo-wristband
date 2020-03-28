@@ -23,7 +23,7 @@
 #include "sys/lock.h"
 #include "esp_event.h"
 
-#include "time.h"
+#include "time_sync.h"
 
 const i2c_port_t i2c_port = I2C_NUM_1;
 static _lock_t s_i2c_lock;
@@ -98,16 +98,6 @@ static void i2c_init() {
 
 /* Updates the board time according to the external RTC*/
 static void board_clock_init() {
-        
-    struct tm cur_time;
-    pcf8563_read_time(&cur_time);
+    time_sync_init();
 
-
-    printf("prev time %ld\n", time(NULL));
-    time_t t = mktime(&cur_time);
-    printf("Setting time: %s \n", asctime(&cur_time));
-    struct timeval now = { .tv_sec = t };
-    settimeofday(&now, NULL);
-
-    printf("new time %ld\n", time(NULL));
 }

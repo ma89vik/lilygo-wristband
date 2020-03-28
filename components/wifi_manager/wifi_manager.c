@@ -9,13 +9,14 @@
 #include <string.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include "freertos/semphr.h"
 #include "freertos/event_groups.h"
 #include "esp_system.h"
 #include "esp_wifi.h"
 #include "esp_event.h"
 #include "esp_log.h"
 #include "esp_system.h"
-
+#include <sys/lock.h>
 #include "lwip/err.h"
 #include "lwip/sys.h"
 
@@ -30,7 +31,7 @@
 
 /* FreeRTOS event group to signal when we are connected*/
 static EventGroupHandle_t s_wifi_event_group;
-
+static _lock_t s_wifi_lock;
 /* The event group allows multiple bits for each event, but we only care about one event 
  * - are we connected to the AP with an IP? */
 #define WIFI_CONNECTED_BIT BIT0
@@ -38,6 +39,7 @@ static EventGroupHandle_t s_wifi_event_group;
 
 static const char *TAG = "wifi station";
 
+static int s_num_users;
 static int s_retry_num = 0;
 
 static void event_handler(void* arg, esp_event_base_t event_base, 
@@ -56,6 +58,7 @@ static void event_handler(void* arg, esp_event_base_t event_base,
         xEventGroupSetBits(s_wifi_event_group, WIFI_CONNECTED_BIT);
     }
 }
+    
 
 void wifi_init_sta(void)
 {
@@ -91,8 +94,8 @@ static void tcp_ip_init() {
 }
 
 
-esp_err_t wifi_init_and_connect(void)
-{   
+static esp_err_t wifi_init_connect(void)
+{
     tcp_ip_init();
     ESP_LOGI(TAG, "ESP_WIFI_MODE_STA");
     wifi_init_sta();
@@ -120,8 +123,25 @@ esp_err_t wifi_init_and_connect(void)
     }
 }
 
-void wifi_manager_deinit(void){
 
+
+esp_err_t wifi_manager_request_access(void)
+{   
+    _lock_acquire(&s_wifi_lock);
+
+    if (s_num_users == 0) {
+        wifi_init_connect();
+
+    }
+
+    s_num_users++;
+    _lock_release(&s_wifi_lock);
+
+    return ESP_OK;
+}
+
+static void wifi_deinit()
+{
     ESP_LOGI(TAG, "Deinit wifi");
     ESP_ERROR_CHECK(esp_event_handler_unregister(IP_EVENT, IP_EVENT_STA_GOT_IP, &event_handler));
     ESP_ERROR_CHECK(esp_event_handler_unregister(WIFI_EVENT, ESP_EVENT_ANY_ID, &event_handler));
@@ -129,4 +149,11 @@ void wifi_manager_deinit(void){
     ESP_ERROR_CHECK(esp_wifi_stop());
     //ESP_ERROR_CHECK(esp_wifi_deinit());    
     vEventGroupDelete(s_wifi_event_group);
+}
+
+
+void wifi_manager_finished(void)
+{
+    // Be lazy and dont deinit the wifi
+    // Will probably deepsleep soon anyway
 }

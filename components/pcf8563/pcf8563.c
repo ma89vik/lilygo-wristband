@@ -135,8 +135,8 @@ void pcf8563_set_time(struct tm *time) {
     cur_time.hours = uint8_to_bct8(time->tm_hour);
     cur_time.days = uint8_to_bct8(time->tm_mday);
     cur_time.weekdays = uint8_to_bct8(time->tm_wday);
-    cur_time.months = uint8_to_bct8(time->tm_mon);
-    cur_time.years = uint8_to_bct8(time->tm_year);
+    cur_time.months = uint8_to_bct8((time->tm_mon + 1));
+    cur_time.years = uint8_to_bct8( (time->tm_year - 100 ));
 
     pcf8563_write_reg(PCF8563_SEC_REG, (uint8_t*)&cur_time, sizeof(pcf8563_time_t));
 }
@@ -157,5 +157,5 @@ void pcf8563_read_time(struct tm *time) {
     /* Year is given as 0 - 99, need to be number of years from 1900 */
     time->tm_year = bct8_to_uint8(cur_time.years) + 100;
 
-    ESP_LOGD(TAG, "%d:%d:%d, day %d, weekday %d, month %d year %d", time->tm_hour, time->tm_min, time->tm_sec, time->tm_mday, time->tm_wday, time->tm_mon,time->tm_year);
+    ESP_LOGE(TAG, "%d:%d:%d, day %d, weekday %d, month %d year %d", time->tm_hour, time->tm_min, time->tm_sec, time->tm_mday, time->tm_wday, time->tm_mon,time->tm_year);
 }

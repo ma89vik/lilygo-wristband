@@ -107,7 +107,14 @@ int openweather_read(char* city, float *temp, weather_type_t *weather_type) {
 
     vSemaphoreDelete(http_get_comp);
 
-    return 0;
+    // Check if fetch succeeded 
+    if ( (*temp != 0)) {
+        ESP_LOGI(TAG, "Fetched weather from openweather");
+        return 0;
+    } else {
+        ESP_LOGW(TAG, "Failed to fetch weather from openweather");
+        return -1;
+    }
 
 }
 
@@ -153,6 +160,7 @@ static void openweather_http_get(char *request){
         .path = request,
         .transport_type = HTTP_TRANSPORT_OVER_SSL,
         .buffer_size = 1024,
+        .timeout_ms = 10000,
     };
     esp_http_client_handle_t client = esp_http_client_init(&config);
 

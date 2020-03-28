@@ -24,10 +24,15 @@ void focus_cb(struct _lv_group_t *g){
 
 lv_obj_t *menu_list;
 
-static void ota_button_clicked_evt(lv_obj_t * obj, lv_event_t event) {
+static void menu_ota_button_clicked_evt(lv_obj_t * obj, lv_event_t event) {
     if(event == LV_EVENT_CLICKED) {
         state_ctrl_post_evt(STATE_CTRL_OTA_SCREEN_EVT);
+    }
+}
 
+static void menu_sntp_button_clicked_evt(lv_obj_t * obj, lv_event_t event) {
+    if(event == LV_EVENT_CLICKED) {
+        state_ctrl_post_evt(STATE_CTRL_SNTP_SCREEN_EVT);
     }
 }
 
@@ -47,7 +52,11 @@ void menu_create(lv_obj_t *scr)
     lv_obj_t * list_btn;
 
     list_btn = lv_list_add_btn(menu_list, LV_SYMBOL_DOWNLOAD, "OTA");
-    lv_obj_set_event_cb(list_btn, ota_button_clicked_evt);
+    lv_obj_set_event_cb(list_btn, menu_ota_button_clicked_evt);
+    lv_group_add_obj(g, list_btn);
+
+    list_btn = lv_list_add_btn(menu_list, LV_SYMBOL_BELL, "SNTP");
+    lv_obj_set_event_cb(list_btn, menu_sntp_button_clicked_evt);
     lv_group_add_obj(g, list_btn);
 
     list_btn = lv_list_add_btn(menu_list, LV_SYMBOL_CHARGE, "Laser");
@@ -56,8 +65,7 @@ void menu_create(lv_obj_t *scr)
     list_btn = lv_list_add_btn(menu_list, LV_SYMBOL_CUT, "Sharks");
     lv_group_add_obj(g, list_btn);
 
-    list_btn = lv_list_add_btn(menu_list, LV_SYMBOL_BELL, "DND");
-    lv_group_add_obj(g, list_btn);
+  
 
     lv_indev_set_group(get_disp_driver(), g);
     lv_group_set_focus_cb(g, focus_cb );

@@ -46,7 +46,6 @@ static esp_err_t aqi_get_api_key(char *api_key, size_t len) {
         ESP_LOGE(TAG, "The NVS value is not initialized yet!\n");
     }
 
-    ESP_LOGE(TAG, "err %d ", err);
     return err;
 }
 
@@ -118,6 +117,7 @@ static void aqi_http_get(char *request){
         .path = request,
         .transport_type = HTTP_TRANSPORT_OVER_SSL,
         .buffer_size = 2048,
+        .timeout_ms = 10000,
     };
     esp_http_client_handle_t client = esp_http_client_init(&config);
 

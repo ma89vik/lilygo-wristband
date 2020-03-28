@@ -24,6 +24,8 @@
 #include "esp_netif.h"
 #include "esp_event.h"
 #include "esp_wifi.h"
+#include "pcf8563.h"
+#include "time_sync.h"
 
 static char* TAG = "main";
 
@@ -162,7 +164,7 @@ static void print_wakeup_cause() {
         }
 }
 
-/*
+
 void nvs_write_key() {
     int err;
     nvs_handle_t my_handle;
@@ -172,8 +174,8 @@ void nvs_write_key() {
     } else {
         printf("Done\n");
     }
-
-    err = nvs_set_str(my_handle, "ow_api_key", "cf1552acf5ff56dbea4f90b3c201a5b5");
+err = nvs_set_str(my_handle, "aqi_api_key", "661a872395ca092fac2f9949c5af85547d5cdcec");
+//    err = nvs_set_str(my_handle, "ow_api_key", "cf1552acf5ff56dbea4f90b3c201a5b5");
     printf((err != ESP_OK) ? "Failed!\n" : "Done\n");
 
     // Commit written value.
@@ -186,7 +188,7 @@ void nvs_write_key() {
 
     // Close
     nvs_close(my_handle);
-}*/
+}
 
 
 
@@ -211,11 +213,12 @@ void app_main(void) {
     /* Init sub systems */
     
     nvs_init();
+    nvs_write_key();
     /* Init board and application */
     board_init();
     state_ctrl_init();
 
-    //wifi_init_and_connect();
+    //wifi_manager_request_access();
     weather_cfg_t cfg = {
         .loc = "shanghai",
         .pm25_cb = desktop_update_pm25,
@@ -228,6 +231,6 @@ void app_main(void) {
     while(1) {        
         desktop_update_time();
         desktop_update_battery(battery_lvl_read());
-        vTaskDelay(1000 / portTICK_PERIOD_MS);        
+        vTaskDelay(1000 / portTICK_PERIOD_MS);       
     }
 }

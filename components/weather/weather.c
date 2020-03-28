@@ -10,7 +10,7 @@
 #include "time.h"
 #include "aqi.h"
 #include "openweathermap.h"
-#include "wifi.h"
+#include "wifi_manager.h"
 
 
 #include "freertos/FreeRTOS.h"
@@ -58,35 +58,39 @@ static void weather_task(void *vParameters) {
     weather_data_t *weather_data = &(weather->weather_data);
     weather_fetch_from_nvs(weather_data);
 
-    ESP_LOGD(TAG, "Fetched weather data: pm25 = %d, loc = %s, timestamp = %ld",
+    ESP_LOGD(TAG, "Fetched weather data from NVS: pm25 = %d, loc = %s, timestamp = %ld",
             weather_data->pm25, weather_data->loc, weather_data->timestamp);
 
     if (!weather_is_outdated(weather_data) & weather_is_loc_correct(weather_data, weather)) {
-        goto update;
+        
+        goto no_update;
     }
 
-    if (wifi_init_and_connect() != ESP_OK) {
+    if (wifi_manager_request_access() != ESP_OK) {
         ESP_LOGE(TAG, "Failed to init wifi");
-        wifi_manager_deinit();
+        wifi_manager_finished();
         return 0;
     }
     /* Weather data is outdate, fetch new */
-    ESP_LOGI(TAG, "Fetch new weather data");
+    ESP_LOGI(TAG, "Fetch online weather data");
     weather_data->pm25 = aqi_read(weather->cfg.loc);
     weather_data->timestamp = time(NULL);
     strncpy( weather_data->loc, weather->cfg.loc, LOC_STR_MAX_LEN);
 
-    openweather_read(weather->cfg.loc, &weather_data->temp, &weather_data->weather_type);
+    int openweather_ret = openweather_read(weather->cfg.loc, &weather_data->temp, &weather_data->weather_type);
 
 
     /* Store new weather data in NVS if sucessful read */
-    if (weather_data->pm25 != 0) {
+    if (weather_data->pm25 != 0 && (openweather_ret == 0)) {
+        ESP_LOGI(TAG, "Successfully fetched weather data online");
         weather_store_to_nvs(weather_data);
     }
-    wifi_manager_deinit();
 
-update:
-    
+    wifi_manager_finished();
+
+no_update:
+    ESP_LOGI(TAG, "Weather and AQI data is up to date"); 
+
     if (weather->cfg.pm25_cb != NULL) {
         weather->cfg.pm25_cb(weather_data->pm25);
     } 

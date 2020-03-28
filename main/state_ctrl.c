@@ -18,6 +18,7 @@
 #include "menu.h"
 #include "ota.h"
 #include "ota_screen.h"
+#include "time_sync.h"
 
 static char *TAG = "state_ctrl";
 
@@ -34,6 +35,7 @@ typedef enum {
     WATCH_DESKTOP,
     WATCH_MENU,
     WATCH_OTA,
+    WATCH_PROV,
 
 } watch_state_t;
 
@@ -59,6 +61,7 @@ static void state_ctrl_trans_handler(void* event_handler_arg,
                     return;
                 case WATCH_MENU:
                 case WATCH_OTA:
+                case WATCH_PROV:
                     return;
             }
 
@@ -70,6 +73,7 @@ static void state_ctrl_trans_handler(void* event_handler_arg,
                     return;
                 case WATCH_MENU:
                 case WATCH_OTA:
+                case WATCH_PROV:
                     display_aquire();                    
                     lv_scr_load(desktop_scr);
                     lv_obj_clean(cur_scr);
@@ -85,7 +89,7 @@ static void state_ctrl_trans_handler(void* event_handler_arg,
                     display_aquire();     
                     lv_obj_clean(cur_scr);
                     display_release();
-                    ota_screen_create(cur_scr);
+                    ota_screen_create(cur_scr);                    
  #ifdef CONFIG_OTA_ENABLE
                     ota_init();
  #endif      
@@ -94,7 +98,17 @@ static void state_ctrl_trans_handler(void* event_handler_arg,
                 case WATCH_DESKTOP:
                 case WATCH_OTA:
                     return;
-            }          
+            } 
+
+        case STATE_CTRL_SNTP_SCREEN_EVT:
+            switch (watch_state) {
+                case WATCH_MENU:
+                    time_sync();
+                    return;
+                case WATCH_DESKTOP:
+                case WATCH_OTA:
+                    return;
+            }
     }
 }
 
