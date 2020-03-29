@@ -1,0 +1,46 @@
+---
+kind: pipeline
+type: docker
+name: default
+
+steps:
+  - name: build
+    image: drone_idf_env:0.2
+    commands:
+      - echo "asd" > test.txt
+      
+  - name: deploy
+    image: appleboy/drone-scp
+    privileged: true
+    settings:
+      host:
+        from_secret: deploy_host
+      username:
+        from_secret: ssh_username
+      password:
+        from_secret: ssh_password
+      port: 22
+      target: /tmp
+      source: test.txt
+
+when:
+  event:
+    - push
+    - tag
+
+
+---
+kind: secret
+name: username
+data: kQAoX9t9uOtYx1FzjGuHEW6Fsn2iN1bp2egR7BZe7tc=
+
+---
+kind: secret
+name: password
+data: 4rW/jG1FhETA+HSI+66aTwaqDCsABawot66ivjEnmla/2g==
+
+---
+kind: secret
+name: host
+data: vmq+lAUdzo6kJ0jVH9mnF30Kd/ZTSFlrrki76JjoXmfJahmK9jUQy9w=
+
