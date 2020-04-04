@@ -12,6 +12,9 @@ steps:
     - idf_exports=$(/esp-idf/tools/idf_tools.py export) || return 1
     - eval $idf_exports
     - git submodule update --init --recursive
+    - cd /esp-idf 
+    - git apply /drone/src/esp_idf.patch
+    - cd /drone/src/
     - idf.py build
 
   - name: deploy
