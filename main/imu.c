@@ -40,7 +40,7 @@ static void imu_get_input_task(void* vParameters) {
     accFilter_init(&filt_y);
 
     int8_t acc_x, acc_y;
-    float x,y;
+    float y;
     while(1) {
         mpu9250_read_acc(&acc_x, &acc_y);
 

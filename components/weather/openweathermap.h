@@ -7,4 +7,9 @@
 
 #include "weather.h"
 
-int openweather_read(char* city, float *temp, weather_type_t *weather_type);
+typedef struct {
+    weather_type_t type;
+    float temp;
+} openweather_data_t;
+
+int openweather_read(char* city, openweather_data_t *weather_data);

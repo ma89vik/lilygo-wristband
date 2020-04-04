@@ -13,7 +13,6 @@
 #include "esp_log.h"
 
 static QueueHandle_t input_event_queue;
-static char *TAG = "input";
 
 static int evt_to_lvgl_key(input_event_t evt);
 

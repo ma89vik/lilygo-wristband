@@ -23,7 +23,7 @@
 #include "weather.h"
 
 #include "freertos/FreeRTOS.h"
-#include "freertos/semphr.h"
+#include "freertos/queue.h"
 
 #define OWM_API_KEY_NVS_KEY "ow_api_key"
 #define OWM_API_KEY_LEN 33
@@ -31,7 +31,7 @@
 #define OWM_URL "api.openweathermap.org"
 
 #define KELVIN_TO_C 273.15 
-
+#define OPENWEATHER_READ_TIMEOUT_MS 10000
 
 typedef struct {
     weather_type_t type;
@@ -51,7 +51,6 @@ static weather_img_map_entry s_icon_map[]= {
     {WEATHER_UNKOWN, ""},
 };
 
-
 static char *TAG = "openweathermap";
 
 static void openweather_http_get(char *request);
@@ -59,9 +58,7 @@ static esp_err_t _http_event_handler(esp_http_client_event_t *evt);
 static esp_err_t openweather_parse_response(char *json_str, float *temp, weather_type_t *weather_type);
 static weather_type_t openweather_code_to_weather_type(char *code);
 
-xSemaphoreHandle http_get_comp;
-static volatile float s_temp;
-static volatile weather_type_t s_weather_type;
+static volatile QueueHandle_t weather_data_queue;
 
 static esp_err_t openweather_get_api_key(char *api_key, size_t len) {
     
@@ -82,33 +79,39 @@ static esp_err_t openweather_get_api_key(char *api_key, size_t len) {
     return err;
 }
 
-int openweather_read(char* city, float *temp, weather_type_t *weather_type) {
+int openweather_read(char* city, openweather_data_t *weather_data) {
 
 
     char api_key[OWM_API_KEY_LEN];
     char request[OWM_MAX_REQUEST_LEN];
+
+    if (city == NULL) {
+        ESP_LOGE(TAG, "No city argument");
+    }
 
     if (openweather_get_api_key(api_key, OWM_API_KEY_LEN) != ESP_OK) {
         ESP_LOGE(TAG, "Open weather API key read failed");
         return -1;
     }
 
+    weather_data_queue = xQueueCreate( 1, sizeof( openweather_data_t) );
+    if (weather_data_queue == NULL) {
+        ESP_LOGE(TAG, "Failed to create queue");
+        return -1;
+    }
+
     snprintf(request, OWM_MAX_REQUEST_LEN, "/data/2.5/weather?q=%s&appid=%s", city, api_key );
 
-    ESP_LOGE(TAG, "%s", request);
-    http_get_comp = xSemaphoreCreateBinary();
+    ESP_LOGI(TAG, "%s", request);
 
     openweather_http_get(request);
 
-    xSemaphoreTake(http_get_comp, 10000 / portTICK_PERIOD_MS);
+    xQueueReceive(weather_data_queue, weather_data, OPENWEATHER_READ_TIMEOUT_MS / portTICK_PERIOD_MS);
 
-    *temp = s_temp;
-    *weather_type = s_weather_type;
-
-    vSemaphoreDelete(http_get_comp);
+    vQueueDelete(weather_data_queue);
 
     // Check if fetch succeeded 
-    if ( (*temp != 0)) {
+    if ( (weather_data->temp!= 0)) {
         ESP_LOGI(TAG, "Fetched weather from openweather");
         return 0;
     } else {
@@ -136,9 +139,12 @@ static esp_err_t _http_event_handler(esp_http_client_event_t *evt)
         case HTTP_EVENT_ON_DATA:
             ESP_LOGI(TAG, "HTTP_EVENT_ON_DATA, len=%d", evt->data_len);
             
-            openweather_parse_response(evt->data, &s_temp, &s_weather_type);
-            xSemaphoreGive(http_get_comp);
+            openweather_data_t data;
+            int ret = openweather_parse_response(evt->data, &data.temp, &data.type);
             
+            if (ret == ESP_OK) {
+                xQueueSend(weather_data_queue, &data, portMAX_DELAY);       
+            }
 
             break;
         case HTTP_EVENT_ON_FINISH:

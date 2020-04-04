@@ -24,8 +24,6 @@
 #include "input.h"
 #include "esp_log.h"
 
-static char *TAG = "display";
-
 static void IRAM_ATTR lv_tick_task(void);
 static lv_color_t *buf1;
 
@@ -40,7 +38,7 @@ void display_release() {
 
 }
 
-void *display_lvgl_task(void *vParameters) {
+void display_lvgl_task(void *vParameters) {
 	while(1) {
 		vTaskDelay(1);
 		display_aquire();

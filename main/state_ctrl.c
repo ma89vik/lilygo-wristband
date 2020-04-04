@@ -41,7 +41,7 @@ typedef enum {
 
 static lv_obj_t *desktop_scr, *cur_scr;
 static watch_state_t watch_state;
-static esp_event_handler_t state_ctrl_evt_loop;
+static esp_event_loop_handle_t state_ctrl_evt_loop;
 
 static void state_ctrl_trans_handler(void* event_handler_arg, 
                                         esp_event_base_t event_base, 
@@ -64,6 +64,7 @@ static void state_ctrl_trans_handler(void* event_handler_arg,
                 case WATCH_PROV:
                     return;
             }
+            break;
 
         case STATE_CTRL_LONG_PRESS_EVT:
             switch (watch_state) {
@@ -82,6 +83,7 @@ static void state_ctrl_trans_handler(void* event_handler_arg,
 
                     return;
             }
+            break;
 
         case STATE_CTRL_OTA_SCREEN_EVT:
             switch (watch_state) {
@@ -97,8 +99,10 @@ static void state_ctrl_trans_handler(void* event_handler_arg,
                     return;
                 case WATCH_DESKTOP:
                 case WATCH_OTA:
+                case WATCH_PROV:
                     return;
-            } 
+            }
+             break; 
 
         case STATE_CTRL_SNTP_SCREEN_EVT:
             switch (watch_state) {
@@ -107,8 +111,10 @@ static void state_ctrl_trans_handler(void* event_handler_arg,
                     return;
                 case WATCH_DESKTOP:
                 case WATCH_OTA:
+                case WATCH_PROV:
                     return;
             }
+             break;
     }
 }
 

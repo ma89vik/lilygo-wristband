@@ -24,14 +24,11 @@ typedef enum {
 typedef void (*update_aqi_cb)(uint16_t pm25);
 typedef void (*update_weather_cb)(float temp, weather_type_t weather_type);
 
-
 typedef struct {
     char *loc;
     update_aqi_cb pm25_cb;
     update_weather_cb weather_cb;
 } weather_cfg_t;
-
-
 
 typedef struct weather_t* weather_handle_t;
 

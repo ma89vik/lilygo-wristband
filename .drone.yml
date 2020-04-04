@@ -7,11 +7,15 @@ steps:
   - name: build
     image: drone_idf_env:0.2
     commands:
-      - echo "asd" > test.txt
-      
+    - export IDF_TOOLS_EXPORT_CMD=/esp-idf/export.sh
+    - export IDF_TOOLS_INSTALL_CMD=/esp-idf/install.sh
+    - idf_exports=$(/esp-idf/tools/idf_tools.py export) || return 1
+    - eval $idf_exports
+    - git submodule update --init --recursive
+    - idf.py build
+
   - name: deploy
     image: appleboy/drone-scp
-    privileged: true
     settings:
       host:
         from_secret: deploy_host
@@ -20,27 +24,12 @@ steps:
       password:
         from_secret: ssh_password
       port: 22
-      target: /tmp
-      source: test.txt
+      target: /var/www/ota
+      source: build/t_wristband.bin
 
 when:
   event:
     - push
     - tag
 
-
----
-kind: secret
-name: username
-data: kQAoX9t9uOtYx1FzjGuHEW6Fsn2iN1bp2egR7BZe7tc=
-
----
-kind: secret
-name: password
-data: 4rW/jG1FhETA+HSI+66aTwaqDCsABawot66ivjEnmla/2g==
-
----
-kind: secret
-name: host
-data: vmq+lAUdzo6kJ0jVH9mnF30Kd/ZTSFlrrki76JjoXmfJahmK9jUQy9w=
 

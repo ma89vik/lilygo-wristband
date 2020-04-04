@@ -140,7 +140,7 @@ esp_err_t wifi_manager_request_access(void)
     return ESP_OK;
 }
 
-static void wifi_deinit()
+static void __attribute__((unused)) wifi_deinit()
 {
     ESP_LOGI(TAG, "Deinit wifi");
     ESP_ERROR_CHECK(esp_event_handler_unregister(IP_EVENT, IP_EVENT_STA_GOT_IP, &event_handler));

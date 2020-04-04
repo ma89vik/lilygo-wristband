@@ -145,7 +145,7 @@ void stats_task() {
     }
 }
 
-static void print_wakeup_cause() {
+static void __attribute__((unused)) print_wakeup_cause() {
 
     switch (esp_sleep_get_wakeup_cause()) {
         case ESP_SLEEP_WAKEUP_EXT1: {

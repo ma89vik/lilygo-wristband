@@ -16,7 +16,6 @@
 
 #define LONG_PRESS_MS 1000
 
-static char *TAG = "touchpad";
 
 static int touch_press_start;
 

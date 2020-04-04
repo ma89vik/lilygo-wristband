@@ -17,8 +17,6 @@
 #include "board.h"
 #include "mpu9250.h"
 
-static char *TAG = "Power management";
-
 static void pwr_mgmt_wake_on_mov_init() {
 
     /* Wake on motion interrupt not feasible, too easily triggered */

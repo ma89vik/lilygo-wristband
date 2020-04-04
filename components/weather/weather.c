@@ -69,7 +69,7 @@ static void weather_task(void *vParameters) {
     if (wifi_manager_request_access() != ESP_OK) {
         ESP_LOGE(TAG, "Failed to init wifi");
         wifi_manager_finished();
-        return 0;
+        goto exit;
     }
     /* Weather data is outdate, fetch new */
     ESP_LOGI(TAG, "Fetch online weather data");
@@ -77,8 +77,10 @@ static void weather_task(void *vParameters) {
     weather_data->timestamp = time(NULL);
     strncpy( weather_data->loc, weather->cfg.loc, LOC_STR_MAX_LEN);
 
-    int openweather_ret = openweather_read(weather->cfg.loc, &weather_data->temp, &weather_data->weather_type);
-
+    openweather_data_t data;
+    int openweather_ret = openweather_read(weather->cfg.loc, &data);
+    weather_data->temp = data.temp;
+    weather_data->weather_type = data.type;
 
     /* Store new weather data in NVS if sucessful read */
     if (weather_data->pm25 != 0 && (openweather_ret == 0)) {
@@ -98,7 +100,7 @@ no_update:
     if (weather->cfg.weather_cb != NULL) {
         weather->cfg.weather_cb(weather_data->temp, weather_data->weather_type);
     } 
-
+exit:
     vTaskDelete(NULL);
 }
 

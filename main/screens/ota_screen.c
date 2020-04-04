@@ -12,7 +12,7 @@
 
 static char *TAG = "ota screen";
 
-static lv_obj_t *progress_arc, *cont, *msg;
+static lv_obj_t *progress_arc, *msg;
 
 void ota_screen_create(lv_obj_t *scr) {
     ESP_LOGI(TAG, "Creating OTA update screen");

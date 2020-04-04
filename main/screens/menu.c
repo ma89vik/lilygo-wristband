@@ -15,8 +15,6 @@
 #include "ota.h"
 #include "display.h"
 
-static char *TAG = "menu";
-
 void focus_cb(struct _lv_group_t *g){
     lv_list_focus(*(g->obj_focus), LV_ANIM_OFF);
 }

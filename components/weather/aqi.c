@@ -15,21 +15,22 @@
 #include "cJSON.h"
 
 #include "freertos/FreeRTOS.h"
-#include "freertos/semphr.h"
+#include "freertos/queue.h"
+
+static const char *TAG = "aqi";
 
 #define AQI_API_KEY_NVS_KEY "aqi_api_key"
 #define AQI_API_KEY_LEN 41
 #define AQI_MAX_REQUEST_LEN 100
 #define AQI_CN_URL "api.waqi.info"
 
-static char *TAG = "aqi";
+#define AQI_READ_TIMEOUT_MS 10000
 
 static void aqi_http_get(char *request);
 static esp_err_t _http_event_handler(esp_http_client_event_t *evt);
 static esp_err_t aqi_parse_response(char *json_str, int* pm25_val);
 
-xSemaphoreHandle http_get_comp;
-volatile static int s_pm25;
+static volatile QueueHandle_t aqi_data_queue;
 
 static esp_err_t aqi_get_api_key(char *api_key, size_t len) {
     
@@ -55,25 +56,32 @@ int aqi_read(char* city) {
     char api_key[AQI_API_KEY_LEN];
     char request[AQI_MAX_REQUEST_LEN];
 
+    if (city == NULL) {
+        ESP_LOGE(TAG, "No city argument");
+    }
+
     if (aqi_get_api_key(api_key, AQI_API_KEY_LEN) != ESP_OK) {
         ESP_LOGE(TAG, "AQI read failed");
         return -1;
     }
 
     snprintf(request, AQI_MAX_REQUEST_LEN, "/feed/%s/?token=%s", city, api_key );
-
     ESP_LOGE(TAG, "%s", request);
-    http_get_comp = xSemaphoreCreateBinary();
+
+    aqi_data_queue = xQueueCreate( 1, sizeof( int) );
+    if (aqi_data_queue == NULL) {
+        ESP_LOGE(TAG, "Failed to create queue");
+        return -1;
+    }
 
     aqi_http_get(request);
 
-    xSemaphoreTake(http_get_comp, 10000 / portTICK_PERIOD_MS);
-    
+    int data;
+    xQueueReceive(aqi_data_queue, &data, AQI_READ_TIMEOUT_MS / portTICK_PERIOD_MS);
 
-    vSemaphoreDelete(http_get_comp);
+    vQueueDelete(aqi_data_queue);
 
-    return s_pm25;
-
+    return data;
 }
 
 static esp_err_t _http_event_handler(esp_http_client_event_t *evt)
@@ -93,9 +101,13 @@ static esp_err_t _http_event_handler(esp_http_client_event_t *evt)
             break;
         case HTTP_EVENT_ON_DATA:
             ESP_LOGI(TAG, "HTTP_EVENT_ON_DATA, len=%d", evt->data_len);
-            aqi_parse_response(evt->data, &s_pm25);
-            xSemaphoreGive(http_get_comp);
 
+            int data;
+            int ret = aqi_parse_response(evt->data, &data);     
+
+            if (ret == ESP_OK) {
+                xQueueSend(aqi_data_queue, &data, portMAX_DELAY);
+            }
 
             break;
         case HTTP_EVENT_ON_FINISH:

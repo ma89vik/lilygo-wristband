@@ -84,9 +84,6 @@ void advanced_ota_example_task(void *pvParameter)
         goto ota_end;
     }
 
-
-
-    int last_pct = 0;
     while (1) {
         err = esp_https_ota_perform(https_ota_handle);
         if (err != ESP_ERR_HTTPS_OTA_IN_PROGRESS) {
