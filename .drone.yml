@@ -27,7 +27,7 @@ steps:
       password:
         from_secret: ssh_password
       port: 22
-      target: /var/www/ota
+      target: /var/www/html
       source: build/t_wristband.bin
 
 when:
