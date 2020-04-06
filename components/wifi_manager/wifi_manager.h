@@ -12,3 +12,4 @@
 
 esp_err_t wifi_manager_request_access(void);
 void wifi_manager_finished(void);
+esp_err_t wifi_manager_provision(void);

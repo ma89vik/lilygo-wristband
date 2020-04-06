@@ -1,0 +1,23 @@
+menu "Wifi Manager"
+
+    config PROV_ENABLE
+        bool "Enable soft AP provisioning"
+        default y
+        help
+            Enable provisioning
+
+    config SOFT_AP_PROV_SSID
+        string "Provisioning Soft AP SSID"
+        default "esp_idf_softap_prov"
+        help
+            Sets the SSID used by the soft AP during provisioning
+
+    config SOFT_AP_PROV_PW
+        string "Provisioning Soft AP password"
+        default "12345678"
+        help
+            Sets the password used by the soft AP during provisioning
+   
+
+
+endmenu
